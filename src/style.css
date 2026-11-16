@@ -71,7 +71,9 @@ h1 { margin: 4px 0 0; color: var(--muted); font-size: .78rem; font-weight: 500; 
 .speed-control input { width: clamp(64px, 8vw, 115px); margin: 0; accent-color: var(--mint); cursor: pointer; }
 .speed-control output, .generation output, .plant-stats output { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink); }
 .speed-control output { min-width: 7ch; font-size: .72rem; }
-.generation { display: flex; align-items: center; gap: 9px; margin-left: auto; }
+.generation { display: flex; flex: 1 1 210px; align-items: center; gap: 9px; max-width: 570px; margin-left: auto; }
+.generation input { flex: 1; width: 0; min-width: 72px; height: 26px; margin: 0; accent-color: var(--mint); cursor: pointer; }
+.generation input:disabled { opacity: .55; cursor: default; }
 .generation output { min-width: 38px; padding: 4px 6px; text-align: center; border-radius: 5px; background: #0f1713; border: 1px solid var(--line); font-size: .86rem; }
 
 .panels { flex: 1; display: grid; grid-template-columns: minmax(360px, .82fr) minmax(0, 1.18fr); gap: 14px; }
@@ -93,9 +95,31 @@ h2 { margin: 0; font-size: .94rem; font-weight: 700; letter-spacing: -.012em; }
   background-position: center, center;
 }
 .scene canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.sun {
+  position: absolute;
+  top: 12%;
+  left: 75%;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid #f5c78255;
+  border-radius: 50%;
+  color: #f8ce87;
+  background: #332c1c;
+  box-shadow: 0 0 26px 9px #edbb5930, 0 0 85px 31px #edbb5911;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+  cursor: grab;
+}
+.sun:hover { background: #40341e; }
+.sun:active { cursor: grabbing; }
+.sun svg { width: 31px; height: 31px; pointer-events: none; }
 .panel-footer { display: flex; align-items: center; min-height: 42px; margin: 0; padding: 8px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; }
-.plant-stats { gap: 18px; }
+.plant-stats { flex-wrap: wrap; gap: 5px 18px; }
 .plant-stats output { margin-right: 3px; font-size: .76rem; }
+#sun-help { margin-left: auto; }
 
 @media (max-width: 850px) {
   .app { padding: 18px; }
@@ -111,7 +135,7 @@ h2 { margin: 0; font-size: .94rem; font-weight: 700; letter-spacing: -.012em; }
   .toolbar { padding: 9px; }
   .button { padding-inline: 8px; }
   .button.primary { min-width: 77px; }
-  .generation { gap: 5px; }
+  .generation { flex-basis: 100%; order: 2; gap: 7px; }
   .generation output { min-width: 32px; }
   .scene { min-height: 345px; }
 }

@@ -38,7 +38,11 @@
           <input id="speed" type="range" min="1" max="8" value="3" />
           <output id="speed-value" for="speed">3 gen/s</output>
         </div>
-        <div class="generation">Generation <output id="generation" aria-label="Generation">0</output></div>
+        <div class="generation">
+          <label for="timeline">Generation</label>
+          <input id="timeline" type="range" min="0" max="0" value="0" />
+          <output id="generation" for="timeline" aria-label="Current generation" aria-live="off">0</output>
+        </div>
       </div>
 
       <div class="panels">
@@ -47,17 +51,23 @@
             <h2 id="rules-title">Growth rules</h2>
           </div>
           <div id="workspace" aria-label="Blockly workspace"></div>
-          <p class="panel-footer" id="rule-message" role="status">Edit the angle to change how wide the oak grows.</p>
+          <p class="panel-footer" id="rule-message" role="status">Add conditions from Logic to change when buds grow.</p>
         </section>
         <section class="panel preview" aria-labelledby="preview-title">
           <div class="panel-heading">
             <h2 id="preview-title">Plant preview</h2>
             <span class="status" id="growth-status" data-state="running" role="status">Growing</span>
           </div>
-          <div class="scene"><canvas id="plant" role="img" aria-label="An oak growing from a seed"></canvas></div>
+          <div class="scene">
+            <canvas id="plant" role="img" aria-label="An oak growing from a seed"></canvas>
+            <button id="sun" class="sun" type="button" aria-label="Move sun" aria-describedby="sun-help">
+              <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><circle cx="18" cy="18" r="6" fill="currentColor"/><path d="M18 3v4m0 22v4M3 18h4m22 0h4M7.4 7.4l2.8 2.8m15.6 15.6 2.8 2.8M7.4 28.6l2.8-2.8m15.6-15.6 2.8-2.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
           <div class="panel-footer plant-stats">
-            <span><output id="bud-count">0</output> active buds</span>
-            <span><output id="segment-count">0</output> segments</span>
+            <span><output id="bud-count" aria-live="off">0</output> active buds</span>
+            <span><output id="segment-count" aria-live="off">0</output> segments</span>
+            <span id="sun-help">Drag the sun or use arrow keys.</span>
           </div>
         </section>
       </div>
