@@ -1,0 +1,18 @@
+{
+  "name": "canopy-oak-playground",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "check": "tsc --noEmit",
+    "build": "npm run check && vite build"
+  },
+  "dependencies": {
+    "blockly": "13.4.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "8.3.3"
+  }
+}
