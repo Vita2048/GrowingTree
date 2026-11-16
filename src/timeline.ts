@@ -1,4 +1,4 @@
-import { DEFAULT_SUN, growOneGeneration, seedPlant, type Action, type Plant, type Point } from './growth';
+import { DEFAULT_SUN, finished, growOneGeneration, seedPlant, type Action, type Plant, type Point } from './growth';
 
 interface Frame {
   plant: Plant;
@@ -6,8 +6,12 @@ interface Frame {
 }
 
 export class Timeline {
-  private frames: Frame[] = [{ plant: seedPlant(), sun: DEFAULT_SUN }];
+  private frames: Frame[];
   private cursor = 0;
+
+  constructor(readonly wallX: number | null = null, sun: Point = DEFAULT_SUN, chanceSeed?: number) {
+    this.frames = [{ plant: seedPlant(chanceSeed), sun }];
+  }
 
   get current(): Frame {
     return this.frames[this.cursor];
@@ -35,7 +39,7 @@ export class Timeline {
   step(actions: Action[]): void {
     if (this.cursor === this.latest) {
       const { plant, sun } = this.current;
-      const next = growOneGeneration(plant, actions, sun);
+      const next = growOneGeneration(plant, actions, sun, this.wallX);
       if (next === plant) return;
       this.frames.push({ plant: next, sun });
     }
@@ -45,15 +49,26 @@ export class Timeline {
   applyRules(actions: Action[]): void {
     const saved = this.frames;
     const target = this.cursor;
-    this.frames = [{ plant: seedPlant(), sun: saved[0].sun }];
+    this.frames = [{ plant: seedPlant(saved[0].plant.chanceSeed), sun: saved[0].sun }];
     if (actions.length) {
       for (const frame of saved.slice(1)) {
         const previous = this.frames[this.frames.length - 1];
-        const plant = growOneGeneration(previous.plant, actions, previous.sun);
+        const plant = growOneGeneration(previous.plant, actions, previous.sun, this.wallX);
         if (plant === previous.plant) break;
         this.frames.push({ plant, sun: frame.sun });
       }
     }
     this.seek(target);
+  }
+
+  preview(actions: Action[], generation: number): Timeline {
+    const { plant, sun } = this.frames[0];
+    const variant = new Timeline(this.wallX, sun, plant.chanceSeed);
+    while (variant.latest < generation && !finished(variant.current.plant)) {
+      variant.moveSun(this.frames[Math.min(variant.latest, this.cursor)].sun);
+      variant.step(actions);
+    }
+    variant.moveSun(this.frames[Math.min(variant.latest, this.cursor)].sun);
+    return variant;
   }
 }

@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#101614" />
-    <meta name="description" content="Grow an oak with editable Blockly rules." />
-    <title>Canopy — Oak playground</title>
+    <meta name="description" content="Grow and evolve plants with editable Blockly rules." />
+    <title>Canopy — Plant playground</title>
   </head>
   <body>
     <main class="app">
@@ -14,7 +14,7 @@
           <svg class="brand-icon" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 31V17m0 8-8-8m8 4 8-8m-8 4 4-5m-12 5v-5m16 1h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="17" r="1.6" fill="currentColor"/></svg>
           <div>
             <div class="brand-name">Canopy</div>
-            <h1>Oak playground</h1>
+            <h1>Plant playground</h1>
           </div>
         </div>
       </header>
@@ -49,6 +49,10 @@
         <section class="panel rules" aria-labelledby="rules-title">
           <div class="panel-heading">
             <h2 id="rules-title">Growth rules</h2>
+            <div class="preset-picker">
+              <label for="preset">Preset</label>
+              <select id="preset"><option value="" hidden>Custom</option></select>
+            </div>
           </div>
           <div id="workspace" aria-label="Blockly workspace"></div>
           <p class="panel-footer" id="rule-message" role="status">Add conditions from Logic to change when buds grow.</p>
@@ -59,16 +63,32 @@
             <span class="status" id="growth-status" data-state="running" role="status">Growing</span>
           </div>
           <div class="scene">
-            <canvas id="plant" role="img" aria-label="An oak growing from a seed"></canvas>
-            <button id="sun" class="sun" type="button" aria-label="Move sun" aria-describedby="sun-help">
+            <canvas id="plant" role="img" aria-label="Plant growing from a seed"></canvas>
+            <div id="height-ruler" class="ruler" role="img" aria-label="Height ruler, 0 to 20 metres">
+              <span>20 m</span><span>15 m</span><span>10 m</span><span>5 m</span><span>0 m</span>
+            </div>
+            <button id="sun" class="sun" type="button" aria-label="Move sun" aria-describedby="sun-help" title="Drag to move the sun">
               <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><circle cx="18" cy="18" r="6" fill="currentColor"/><path d="M18 3v4m0 22v4M3 18h4m22 0h4M7.4 7.4l2.8 2.8m15.6 15.6 2.8 2.8M7.4 28.6l2.8-2.8m15.6-15.6 2.8-2.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             </button>
           </div>
           <div class="panel-footer plant-stats">
             <span><output id="bud-count" aria-live="off">0</output> active buds</span>
             <span><output id="segment-count" aria-live="off">0</output> segments</span>
-            <span id="sun-help">Drag the sun or use arrow keys.</span>
+            <span class="height-readout">Height <output id="height-value" aria-live="off">0 m</output></span>
+            <span id="sun-help" class="sr-only">Drag the sun or use arrow keys.</span>
+            <button id="mutate" class="button mutate" type="button" aria-expanded="false" aria-controls="mutations">
+              <svg viewBox="0 0 20 20" width="17" height="17" fill="none" aria-hidden="true"><path d="M10 17V8m0 5-5-5m5 2 5-5M5 8V5m10 0v-2m0 2h3" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Mutate
+            </button>
           </div>
+          <section id="mutations" class="mutations" aria-labelledby="mutations-title" hidden>
+            <div class="mutations-heading">
+              <h3 id="mutations-title">Choose a variant</h3>
+              <span id="mutation-caption" role="status"></span>
+              <button id="close-mutations" class="button" type="button" aria-label="Close variants">Close</button>
+            </div>
+            <div id="variant-grid" class="variant-grid"></div>
+          </section>
         </section>
       </div>
     </main>

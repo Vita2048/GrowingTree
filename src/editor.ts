@@ -1,59 +1,7 @@
 import * as Blockly from 'blockly';
-import type { Action, BranchAppearance, Condition, Program } from './growth';
+import type { Action, BranchAppearance, Condition, Foliage, Program } from './growth';
 
-const block = {
-  bud: 'when_bud_grows',
-  extend: 'extend_bud',
-  checkAge: 'if_bud_age',
-  split: 'split_bud',
-  bend: 'bend_toward_light',
-  chance: 'if_random_chance',
-  light: 'if_light_here',
-  crowded: 'if_crowded',
-  height: 'if_above_height',
-  stop: 'stop_bud',
-  leaf: 'become_leaf',
-  flower: 'grow_flower',
-  branch: 'when_branch_ages',
-  thickness: 'set_branch_thickness',
-  color: 'set_branch_color',
-};
-
-const starterWorkspace = {
-  blocks: {
-    languageVersion: 0,
-    blocks: [{
-      type: block.bud, x: 28, y: 22,
-      inputs: {
-        DO: {
-          block: {
-            type: block.bend,
-            fields: { ANGLE: 1 },
-            next: {
-              block: {
-                type: block.extend,
-                fields: { DISTANCE: 14 },
-                next: { block: {
-                  type: block.checkAge,
-                  fields: { AGE: 7 },
-                  inputs: { DO: { block: { type: block.split, fields: { ANGLE: 25 } } } },
-                } },
-              },
-            },
-          },
-        },
-      },
-    }, {
-      type: block.branch, x: 28, y: 351,
-      fields: { AGE: 20 },
-      inputs: { DO: { block: {
-        type: block.thickness,
-        fields: { MULTIPLIER: 1.65 },
-        next: { block: { type: block.color, fields: { COLOR: '#956646' } } },
-      } } },
-    }],
-  },
-};
+import { block, presets, type WorkspaceState } from './presets';
 
 const budAction = 'BudAction';
 const branchAction = 'BranchAction';
@@ -86,20 +34,23 @@ export function createEditor(host: HTMLElement): Blockly.WorkspaceSvg {
     },
     {
       type: block.extend,
-      message0: 'extend %1 px',
-      args0: [numeric('DISTANCE', 14, 1, 32)],
+      message0: 'extend %1 m',
+      args0: [numeric('DISTANCE', 0.56, 0.04, 1.28, 0.01)],
       previousStatement: budAction,
       nextStatement: budAction,
       style: 'growth_blocks',
       tooltip: 'Add a branch segment from this bud in its current growth direction.',
     },
     conditionBlock(block.checkAge, 'if bud age ≥ %1', numeric('AGE', 7, 1, 35), 'Check how many generations this bud has lived.'),
-    conditionBlock(block.chance, 'if random chance %1 %%', numeric('PERCENT', 20, 0, 100), 'Roll a chance for each bud each generation.'),
+    conditionBlock(block.chance, 'if random chance %1 %%', numeric('PERCENT', 20, 0, 100), 'Each bud rolls when it reaches this block in a generation. Reset or Replay rerolls the run.'),
     conditionBlock(block.light, 'if this bud is in %1', {
       type: 'field_dropdown', name: 'LIGHT', options: [['light', 'LIT'], ['shade', 'SHADE']],
     }, 'Check whether another branch casts a shadow on this bud.'),
-    conditionBlock(block.crowded, 'if crowded within %1 px', numeric('RADIUS', 15, 1, 80), 'Check for another branch nearby after the bud clears its fork.'),
-    conditionBlock(block.height, 'if height ≥ %1 px', numeric('HEIGHT', 330, 0, 1000), 'Measure this bud’s height above the seed.'),
+    conditionBlock(block.crowded, 'if crowded within %1 m', numeric('RADIUS', 0.60, 0.04, 3.20, 0.01), 'Check for another branch nearby after the bud clears its fork.'),
+    conditionBlock(block.height, 'if height ≥ %1 m', numeric('HEIGHT', 13.2, 0, 40, 0.01), 'Measure this bud’s height in metres above the seed.'),
+    conditionBlock(block.stem, 'if this bud is on %1', {
+      type: 'field_dropdown', name: 'STEM', options: [['the main stem', 'MAIN'], ['a side branch', 'SIDE']],
+    }, 'Choose whether the rule applies to the original stem or an offshoot.'),
     {
       type: block.split,
       message0: 'split into 2 buds at ± %1 °',
@@ -113,11 +64,20 @@ export function createEditor(host: HTMLElement): Blockly.WorkspaceSvg {
       previousStatement: budAction, nextStatement: budAction, style: 'growth_blocks',
       tooltip: 'Turn up to this many degrees toward the sun. Place this above Extend to steer the new segment.',
     },
+    {
+      type: block.sprout, message0: 'sprout side bud at %1 °', args0: [numeric('ANGLE', 65, 0, 90)],
+      previousStatement: budAction, nextStatement: budAction, style: 'growth_blocks',
+      tooltip: 'Keep this bud growing and add an offshoot. Successive shoots alternate sides.',
+    },
+    {
+      type: block.climb, message0: 'climb the wall', previousStatement: budAction, nextStatement: budAction, style: 'growth_blocks',
+      tooltip: 'Aim toward the wall and then follow it upward. Place this before Extend.',
+    },
     terminalBlock(block.stop, 'stop growing', 'End this bud’s growth. Its existing branch remains.'),
     terminalBlock(block.leaf, 'become a leaf', 'End growth and leave a leaf at this tip.'),
     terminalBlock(block.flower, 'grow a flower', 'End growth and bloom at this tip.'),
     {
-      type: block.branch, message0: 'when branch age ≥ %1', args0: [numeric('AGE', 20, 1, 35)],
+      type: block.branch, message0: 'when branch age ≥ %1', args0: [numeric('AGE', 20, 0, 35)],
       message1: '%1', args1: [{ type: 'input_statement', name: 'DO', check: branchAction }],
       style: 'event_blocks', tooltip: 'Style existing segments once they reach this age in generations.',
     },
@@ -128,10 +88,17 @@ export function createEditor(host: HTMLElement): Blockly.WorkspaceSvg {
     },
     {
       type: block.color, message0: 'change color to %1', args0: [{
-        type: 'field_dropdown', name: 'COLOR', options: [['brown', '#956646'], ['amber', '#be8a55'], ['olive', '#889052']],
+        type: 'field_dropdown', name: 'COLOR', options: [['brown', '#956646'], ['amber', '#be8a55'], ['olive', '#889052'], ['mauve', '#b27aaf']],
       }],
       previousStatement: branchAction, nextStatement: branchAction, style: 'appearance_blocks',
       tooltip: 'Set the bark color of mature segments.',
+    },
+    {
+      type: block.foliage, message0: 'foliage style %1', args0: [{
+        type: 'field_dropdown', name: 'STYLE', options: [['oak leaves', 'oak'], ['fern fronds', 'fern'], ['ivy leaves', 'ivy'], ['coral tips', 'coral']],
+      }],
+      previousStatement: branchAction, nextStatement: branchAction, style: 'appearance_blocks',
+      tooltip: 'Choose how foliage is drawn on these branches.',
     },
   ]);
 
@@ -174,15 +141,20 @@ export function createEditor(host: HTMLElement): Blockly.WorkspaceSvg {
       kind: 'categoryToolbox',
       contents: [
         category('Events', '#7894aa', [block.bud, block.branch]),
-        category('Growth', '#6ba686', [block.extend, block.split, block.bend, block.stop, block.leaf, block.flower]),
-        category('Logic', '#9a80b0', [block.checkAge, block.chance, block.light, block.crowded, block.height]),
-        category('Looks', '#b18160', [block.thickness, block.color]),
+        category('Growth', '#6ba686', [block.extend, block.split, block.sprout, block.bend, block.climb, block.stop, block.leaf, block.flower]),
+        category('Logic', '#9a80b0', [block.checkAge, block.chance, block.light, block.crowded, block.height, block.stem]),
+        category('Looks', '#b18160', [block.thickness, block.color, block.foliage]),
       ],
     },
   });
 
-  Blockly.serialization.workspaces.load(starterWorkspace, workspace, { recordUndo: false });
+  loadWorkspace(workspace, presets.oak.workspace);
   return workspace;
+}
+
+export function loadWorkspace(workspace: Blockly.Workspace, state: WorkspaceState): void {
+  Blockly.serialization.workspaces.load(state, workspace, { recordUndo: false });
+  workspace.clearUndo();
 }
 
 function category(name: string, colour: string, types: string[]) {
@@ -196,6 +168,7 @@ function readCondition(current: Blockly.Block, chanceKeys: { next: number }): Co
     case block.light: return { type: 'light', lit: current.getFieldValue('LIGHT') === 'LIT' };
     case block.crowded: return { type: 'crowded', radius: Number(current.getFieldValue('RADIUS')) };
     case block.height: return { type: 'height', minimum: Number(current.getFieldValue('HEIGHT')) };
+    case block.stem: return { type: 'stem', main: current.getFieldValue('STEM') === 'MAIN' };
     default: return null;
   }
 }
@@ -211,10 +184,14 @@ function readActions(first: Blockly.Block | null, chanceKeys: { next: number }):
       case block.split:
         actions.push({ type: 'split', angle: Number(current.getFieldValue('ANGLE')) });
         break;
+      case block.sprout:
+        actions.push({ type: 'sprout', angle: Number(current.getFieldValue('ANGLE')) });
+        break;
       case block.bend:
         actions.push({ type: 'bend', angle: Number(current.getFieldValue('ANGLE')) });
         break;
       case block.stop: actions.push({ type: 'stop' }); break;
+      case block.climb: actions.push({ type: 'climb' }); break;
       case block.leaf: actions.push({ type: 'leaf' }); break;
       case block.flower: actions.push({ type: 'flower' }); break;
       default: {
@@ -233,16 +210,17 @@ function readActions(first: Blockly.Block | null, chanceKeys: { next: number }):
 
 function readAppearance(event: Blockly.Block | undefined): BranchAppearance | null {
   if (!event) return null;
-  const appearance: BranchAppearance = { age: Number(event.getFieldValue('AGE')), thickness: 1, color: null };
+  const appearance: BranchAppearance = { age: Number(event.getFieldValue('AGE')), thickness: 1, color: null, foliage: 'oak' };
   for (let current = event.getInputTargetBlock('DO'); current; current = current.getNextBlock()) {
     if (!current.isEnabled()) continue;
     if (current.type === block.thickness) appearance.thickness = Number(current.getFieldValue('MULTIPLIER'));
     if (current.type === block.color) appearance.color = current.getFieldValue('COLOR');
+    if (current.type === block.foliage) appearance.foliage = current.getFieldValue('STYLE') as Foliage;
   }
   return appearance;
 }
 
-export function readProgram(workspace: Blockly.WorkspaceSvg): Program {
+export function readProgram(workspace: Blockly.Workspace): Program {
   const events = workspace.getTopBlocks(false).filter((top) => top.isEnabled());
   const bud = events.find((top) => top.type === block.bud);
   return {

@@ -1,6 +1,6 @@
-# Canopy · Oak playground
+# Canopy · Plant playground
 
-An Oak growth playground with a Blockly editor, live Canvas 2D preview, and an editable sun position.
+A growth playground with a Blockly editor, live Canvas 2D preview, and a draggable sun.
 
 ## Run locally
 
@@ -15,11 +15,12 @@ Open the local URL printed by Vite. On Windows, use `npm.cmd` in place of `npm` 
 
 ## Try it
 
-- Click **25** in the split block, type **60**, and press Enter. The preview regrows at the same generation with the edited angle.
+- Choose **Oak**, **Fern**, **Wall-climbing vine**, or **Alien coral** from the **Preset** menu to load its editable rules. For Oak, change the split angle from **25°** to **60°** to see a wider canopy.
+- Click **Mutate** to compare six changes to the connected numeric rules. Early growth is previewed up to generation 22 so differences are easier to see. Select a thumbnail to load its rules and its previewed plant.
 - Drag the sun. You can also focus it and use the arrow keys. **Bend toward light** steers new segments toward it, so moving the sun affects future growth.
 - Scrub **Generation** to pause and revisit any recorded frame. Play or Step resumes that history. Moving the sun during a past frame replaces the later frames with a new path as the plant grows.
-- Combine conditions from **Logic** with actions from **Growth**. For example, nest **grow a flower** inside **if height ≥ 330 px**, or **become a leaf** inside **if this bud is in shade**. Put these checks before the split so they can act on the original bud.
+- Use the **0–20 m** ruler to read height above the seed. The height, extension, and spacing blocks accept metres to two decimal places. For example, nest **grow a flower** inside **if height ≥ 12.75 m**. Put this check before the split so it can act on the original bud.
 - **When branch age ≥** controls how many generations a segment lives before the **Looks** blocks change its thickness and color.
-- **Step** pauses growth and advances once. **Reset** returns to the seed and keeps your rules and current sun position. Growth stops after at most 35 generations. **Replay** starts a new run with the current sun.
+- **Step** pauses growth and advances once. **Reset** returns to the seed and keeps your rules and current sun position. Growth stops after at most 35 generations. **Replay** starts a new run with the current sun. Reset and Replay use fresh chance rolls. Scrubbing or editing the current run keeps its random seed.
 
 Run `npm run build` to type-check the project and produce the static site in `dist/`.
