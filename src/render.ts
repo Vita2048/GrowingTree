@@ -1,4 +1,4 @@
-import { RULER_HEIGHT, UNITS_PER_METRE, sample, type Bloom, type BranchAppearance, type Foliage, type Plant, type Point, type Segment } from './growth';
+import { MIN_RULER_METRES, UNITS_PER_METRE, sample, type Bloom, type BranchAppearance, type Foliage, type Plant, type Point, type Segment } from './growth';
 
 const leafColors = ['#426848', '#578358', '#6a975d', '#81ab6c', '#a0bd75', '#b3c780'];
 
@@ -145,10 +145,13 @@ export interface View {
   scale: number;
   width: number;
   height: number;
+  plantMetres: number;
+  rulerMetres: number;
+  tickMetres: number;
 }
 
 function drawWall(ctx: CanvasRenderingContext2D, x: number): void {
-  const height = RULER_HEIGHT * UNITS_PER_METRE;
+  const height = 20 * UNITS_PER_METRE;
   ctx.fillStyle = '#27322e';
   ctx.fillRect(x, -height, 34, height);
   ctx.fillStyle = '#38423b';
@@ -187,13 +190,18 @@ export function createRenderer(canvas: HTMLCanvasElement, thumbnail = false) {
 
     const plotWidth = Math.max(1, width - (thumbnail ? 0 : 54));
     let halfSpan = 245;
-    let above = RULER_HEIGHT * UNITS_PER_METRE;
+    let plantHeight = 0;
     let below = 34;
     for (const segment of plant.segments) {
       halfSpan = Math.max(halfSpan, Math.abs(segment.to.x) + 38);
-      above = Math.max(above, 38 - segment.to.y);
+      plantHeight = Math.max(plantHeight, -segment.to.y);
       below = Math.max(below, segment.to.y + 38);
     }
+    // Include the drawn leaves and flowers above the highest branch tip.
+    const canopyMetres = Math.max(MIN_RULER_METRES, (plantHeight + 38) / UNITS_PER_METRE);
+    const tickMetres = 5 * 2 ** Math.max(0, Math.ceil(Math.log2(canopyMetres / 40)));
+    const rulerMetres = Math.ceil(canopyMetres / tickMetres) * tickMetres;
+    const above = (thumbnail ? canopyMetres : rulerMetres) * UNITS_PER_METRE;
     const floorSpace = Math.max(below, above * 0.105);
     const scale = Math.min(plotWidth * 0.95 / (halfSpan * 2), height * 0.83 / above, height * 0.94 / (above + floorSpace));
     const origin = { x: plotWidth / 2, y: height - Math.max(height * 0.12, scale * floorSpace) };
@@ -218,6 +226,6 @@ export function createRenderer(canvas: HTMLCanvasElement, thumbnail = false) {
       ctx.arc(bud.x, bud.y, bud.depth < 2 ? 2.45 : 1.7, 0, Math.PI * 2);
       ctx.fill();
     }
-    return { origin, scale, width: plotWidth, height };
+    return { origin, scale, width: plotWidth, height, plantMetres: plantHeight / UNITS_PER_METRE, rulerMetres, tickMetres };
   };
 }

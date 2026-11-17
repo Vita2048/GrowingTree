@@ -1,6 +1,6 @@
 import { serialization, svgResize, Workspace } from 'blockly';
 import { createEditor, loadWorkspace, readProgram } from './editor';
-import { RULER_HEIGHT, UNITS_PER_METRE, finished, reachedLimit, type BranchAppearance, type Plant, type Point } from './growth';
+import { UNITS_PER_METRE, finished, reachedLimit, type BranchAppearance, type Plant, type Point } from './growth';
 import { createVariants, type Variant } from './mutation';
 import { connectLibrary } from './library';
 import { presets } from './presets';
@@ -68,22 +68,44 @@ function clampToScene(value: number, size: number): number {
   return Math.max(30, Math.min(size - 30, value));
 }
 
+function paintRuler(view: View): void {
+  const { origin, scale, rulerMetres, tickMetres } = view;
+  const pixels = rulerMetres * UNITS_PER_METRE * scale;
+  ruler.style.height = `${pixels}px`;
+  ruler.style.top = `${origin.y - pixels}px`;
+  const intervals = rulerMetres / tickMetres;
+  const labelStride = Math.max(1, Math.ceil(20 * intervals / pixels));
+  const signature = `${rulerMetres}/${tickMetres}/${labelStride}`;
+  if (ruler.dataset.ticks === signature) return;
+  ruler.dataset.ticks = signature;
+  ruler.setAttribute('aria-label', `Height ruler, 0 to ${rulerMetres} metres`);
+  ruler.style.setProperty('--minor-tick', `${100 / (intervals * 5)}%`);
+  const marks: HTMLSpanElement[] = [];
+  for (let i = intervals; i >= 0; i--) {
+    if (i !== intervals && i % labelStride !== 0) continue;
+    const label = document.createElement('span');
+    label.textContent = `${i * tickMetres} m`;
+    label.style.top = `${100 * (1 - i / intervals)}%`;
+    marks.push(label);
+  }
+  ruler.replaceChildren(...marks);
+}
+
 function paintPreview(force = false): void {
   const { plant, sun } = history.current;
   if (force || plant !== drawnPlant || program.branches !== drawnAppearance) {
     view = draw(plant, program.branches, history.wallX);
     drawnPlant = plant;
     drawnAppearance = program.branches;
-    const height = plant.segments.reduce((tallest, segment) => Math.max(tallest, -segment.to.y), 0);
-    heightValue.value = `${(height / UNITS_PER_METRE).toFixed(2)} m`;
+    if (view) {
+      heightValue.value = `${view.plantMetres.toFixed(2)} m`;
+      paintRuler(view);
+    }
   }
   if (!view) return;
   const { origin, scale, width, height } = view;
   sunHandle.style.left = `${clampToScene(origin.x + sun.x * scale, width)}px`;
   sunHandle.style.top = `${clampToScene(origin.y + sun.y * scale, height)}px`;
-  const rulerPixels = RULER_HEIGHT * UNITS_PER_METRE * scale;
-  ruler.style.height = `${rulerPixels}px`;
-  ruler.style.top = `${origin.y - rulerPixels}px`;
 }
 
 function paint(): void {

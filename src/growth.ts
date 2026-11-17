@@ -68,7 +68,7 @@ export interface Plant {
 
 export const MAX_GENERATION = 35;
 export const UNITS_PER_METRE = 25;
-export const RULER_HEIGHT = 20;
+export const MIN_RULER_METRES = 20;
 export const DEFAULT_SUN: Point = { x: 155, y: -510 };
 const MAX_BUDS = 256;
 const MAX_SEGMENTS = 6_000;

@@ -76,9 +76,7 @@
           </div>
           <div class="scene">
             <canvas id="plant" role="img" aria-label="Plant growing from a seed"></canvas>
-            <div id="height-ruler" class="ruler" role="img" aria-label="Height ruler, 0 to 20 metres">
-              <span>20 m</span><span>15 m</span><span>10 m</span><span>5 m</span><span>0 m</span>
-            </div>
+            <div id="height-ruler" class="ruler" role="img" aria-label="Height ruler"></div>
             <button id="sun" class="sun" type="button" aria-label="Move sun" aria-describedby="sun-help" title="Drag to move the sun">
               <svg viewBox="0 0 36 36" fill="none" aria-hidden="true"><circle cx="18" cy="18" r="6" fill="currentColor"/><path d="M18 3v4m0 22v4M3 18h4m22 0h4M7.4 7.4l2.8 2.8m15.6 15.6 2.8 2.8M7.4 28.6l2.8-2.8m15.6-15.6 2.8-2.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             </button>
@@ -121,7 +119,10 @@
         <h2 id="tree-library-title">My trees</h2>
         <form method="dialog"><button class="button" type="submit">Close</button></form>
       </div>
-      <p id="tree-library-message" class="library-message" role="status"></p>
+      <div class="library-feedback">
+        <p id="tree-library-message" class="library-message" role="status"></p>
+        <button id="undo-tree-delete" class="button" type="button" hidden>Undo</button>
+      </div>
       <ul id="tree-library-list" class="tree-library-list"></ul>
     </dialog>
     <script type="module" src="/src/main.ts"></script>

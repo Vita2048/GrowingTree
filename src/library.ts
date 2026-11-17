@@ -40,9 +40,12 @@ export function connectLibrary(
   const library = document.querySelector<HTMLDialogElement>('#tree-library')!;
   const message = document.querySelector<HTMLElement>('#tree-library-message')!;
   const list = document.querySelector<HTMLUListElement>('#tree-library-list')!;
+  const undo = document.querySelector<HTMLButtonElement>('#undo-tree-delete')!;
+  let lastDeleted: { tree: SavedTree; index: number } | undefined;
 
-  function openLibrary(notification = ''): void {
+  function drawLibrary(notification = ''): void {
     list.replaceChildren();
+    undo.hidden = !lastDeleted;
     try {
       const trees = readTrees();
       message.textContent = notification || (trees.length ? '' : 'Save a tree to start your collection.');
@@ -76,12 +79,55 @@ export function connectLibrary(
         download.textContent = 'Download workspace';
         download.setAttribute('aria-label', `Download workspace for ${tree.name}`);
         download.addEventListener('click', () => downloadTree(tree));
-        item.append(load, download);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'button tree-delete';
+        remove.textContent = 'Delete';
+        remove.setAttribute('aria-label', `Delete ${tree.name}`);
+        remove.addEventListener('click', () => {
+          try {
+            const current = readTrees();
+            const snapshot = JSON.stringify(tree);
+            const index = current.findIndex((entry) => JSON.stringify(entry) === snapshot);
+            if (index === -1) {
+              drawLibrary('This tree was already removed.');
+              library.querySelector<HTMLButtonElement>('button')?.focus();
+              return;
+            }
+            const [deleted] = current.splice(index, 1);
+            localStorage.setItem(libraryKey, JSON.stringify(current));
+            lastDeleted = { tree: deleted, index };
+            drawLibrary(`Deleted ${tree.name}`);
+            undo.focus();
+          } catch {
+            message.textContent = 'Could not delete that saved tree.';
+          }
+        });
+        item.append(load, download, remove);
         list.append(item);
       }
     } catch {
       message.textContent = 'The browser could not open your tree collection.';
     }
+  }
+
+  undo.addEventListener('click', () => {
+    if (!lastDeleted) return;
+    const { tree, index } = lastDeleted;
+    try {
+      const current = readTrees();
+      current.splice(index, 0, tree);
+      localStorage.setItem(libraryKey, JSON.stringify(current));
+      lastDeleted = undefined;
+      drawLibrary(`Restored ${tree.name}`);
+      library.querySelector<HTMLButtonElement>('button')?.focus();
+    } catch {
+      message.textContent = 'Could not restore that saved tree.';
+    }
+  });
+
+  function openLibrary(notification = ''): void {
+    drawLibrary(notification);
     library.showModal();
   }
 
