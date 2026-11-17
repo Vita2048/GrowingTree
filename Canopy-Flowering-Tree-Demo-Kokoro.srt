@@ -1,0 +1,82 @@
+1
+00:00:00,700 --> 00:00:02,527
+This tree grew from a single seed.
+
+2
+00:00:02,707 --> 00:00:05,647
+Every fork, side shoot, and flower came from blocks.
+
+3
+00:00:09,100 --> 00:00:12,335
+Every active tip runs this stack once per generation.
+
+4
+00:00:13,200 --> 00:00:15,227
+First it turns slightly toward the sun.
+
+5
+00:00:17,800 --> 00:00:21,137
+Then it grows a new segment, one point two eight metres long.
+
+6
+00:00:24,500 --> 00:00:27,657
+When a bud reaches age seven, it splits into two tips.
+
+7
+00:00:28,700 --> 00:00:31,017
+They grow twenty-five degrees to either side.
+
+8
+00:00:31,800 --> 00:00:35,747
+The original tip ends its turn, and the new buds start at age zero.
+
+9
+00:00:39,700 --> 00:00:43,441
+The split gives the tree its basic shape. This adds variation.
+
+10
+00:00:43,800 --> 00:00:50,070
+Each time a bud reaches this block, it has a fifteen percent chance
+to sprout a side shoot and keep growing.
+
+11
+00:00:56,000 --> 00:01:03,034
+A flower needs two things. The bud must be at least six generations old,
+and another branch must be within half a metre.
+
+12
+00:01:06,600 --> 00:01:09,992
+When both conditions are met, the tip stops growing and blooms.
+
+13
+00:01:10,800 --> 00:01:15,003
+The fifteen percent roll controls side shoots. Crowding triggers flowers.
+
+14
+00:01:17,000 --> 00:01:19,593
+There's a separate rule for wood that's already grown.
+
+15
+00:01:22,400 --> 00:01:27,277
+Once a segment reaches age twenty, it gets thirty percent thicker
+and turns brown.
+
+16
+00:01:32,100 --> 00:01:33,242
+Now let's grow it.
+
+17
+00:01:34,900 --> 00:01:38,363
+Watch the first forks form, then the gaps fill with side shoots.
+
+18
+00:01:39,200 --> 00:01:42,955
+As the canopy gets crowded, flowers start appearing among the leaves.
+
+19
+00:01:52,100 --> 00:01:55,671
+Scrub back to the first fork, then return to the finished canopy.
+
+20
+00:01:55,851 --> 00:01:58,055
+A fresh run rolls the side shoots again.
