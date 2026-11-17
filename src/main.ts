@@ -2,9 +2,10 @@ import { serialization, svgResize, Workspace } from 'blockly';
 import { createEditor, loadWorkspace, readProgram } from './editor';
 import { RULER_HEIGHT, UNITS_PER_METRE, finished, reachedLimit, type BranchAppearance, type Plant, type Point } from './growth';
 import { createVariants, type Variant } from './mutation';
+import { connectLibrary } from './library';
 import { presets } from './presets';
 import { createRenderer, type View } from './render';
-import { parseSession, readSession, writeSession } from './session';
+import { parseSession, readSession, writeSession, type Session } from './session';
 import { Timeline } from './timeline';
 import './style.css';
 
@@ -114,14 +115,19 @@ function paint(): void {
   queueSave();
 }
 
-function saveProgress(): void {
-  window.clearTimeout(saveTimer);
-  const success = writeSession({
+function captureSession(): Session {
+  return {
+    version: 1,
     workspace: serialization.workspaces.save(workspace),
     timeline: history.save(),
     preset: preset.value,
     speed: Number(speed.value),
-  });
+  };
+}
+
+function saveProgress(): void {
+  window.clearTimeout(saveTimer);
+  const success = writeSession(captureSession());
   const label = success ? 'Saved locally' : 'Browser saving unavailable';
   if (saveStatus.textContent !== label) saveStatus.textContent = label;
 }
@@ -210,16 +216,9 @@ preset.addEventListener('change', () => {
   paint();
 });
 
-openWorkspace.addEventListener('click', () => workspaceFile.click());
-workspaceFile.addEventListener('change', async () => {
-  const file = workspaceFile.files?.[0];
-  workspaceFile.value = '';
-  if (!file) return;
-
+function openSession(imported: Session, name: string): void {
   const scratch = new Workspace();
   try {
-    const imported = parseSession(await file.text());
-    if (!imported) throw new Error('Unrecognized workspace format');
     loadWorkspace(scratch, imported.workspace);
     const nextProgram = readProgram(scratch);
     const nextHistory = Timeline.restore(imported.timeline, nextProgram.buds);
@@ -233,14 +232,37 @@ workspaceFile.addEventListener('change', async () => {
     preset.value = imported.preset;
     speed.value = String(imported.speed);
     showSpeed();
-    importStatus.textContent = `Opened ${file.name}`;
+    importStatus.textContent = `Opened ${name}`;
     paint();
-  } catch {
-    importStatus.textContent = 'Could not open that Canopy workspace.';
   } finally {
     scratch.dispose();
   }
+}
+
+openWorkspace.addEventListener('click', () => workspaceFile.click());
+workspaceFile.addEventListener('change', async () => {
+  const file = workspaceFile.files?.[0];
+  workspaceFile.value = '';
+  if (!file) return;
+  try {
+    const imported = parseSession(await file.text());
+    if (!imported) throw new Error('Unrecognized workspace format');
+    openSession(imported, file.name);
+  } catch {
+    importStatus.textContent = 'Could not open that Canopy workspace.';
+  }
 });
+
+connectLibrary(() => {
+  setRunning(false);
+  paint();
+}, () => {
+  const thumbnail = document.createElement('canvas');
+  thumbnail.width = 256;
+  thumbnail.height = 164;
+  createRenderer(thumbnail, true)(history.current.plant, program.branches, history.wallX);
+  return { thumbnail: thumbnail.toDataURL('image/webp', 0.82), session: captureSession() };
+}, openSession);
 
 playback.addEventListener('click', () => {
   hideVariants();

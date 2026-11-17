@@ -25,6 +25,7 @@ Open the local URL printed by Vite. On Windows, use `npm.cmd` in place of `npm` 
 - **When branch age ≥** controls how many generations a segment lives before the **Looks** blocks change its thickness and color.
 - **Step** pauses growth and advances once. **Reset** returns to the seed and keeps your rules and current sun position. Growth stops after at most 35 generations. **Replay** starts a new run with the current sun. Reset and Replay use fresh chance rolls. Scrubbing or editing the current run keeps its random seed.
 - The browser automatically saves your blocks, speed, and current growth timeline, including sun moves and random rolls. Reloading restores the run paused at the same generation. Saves are tied to the browser and site address.
+- Use **Save tree** to pause growth and keep a named copy in **My trees**. Open a thumbnail to restore its rules and timeline, or use **Download workspace** to create an importable JSON backup. The collection stays in this browser.
 - Download [the flowering tree workspace](examples/flowering-tree.json), then use **Open** beside **Preset** to load it. It opens at generation 35. Drag **Generation** back to zero and press **Play** to watch the saved run grow again.
 
 Run `npm run build` to type-check the project and produce the static site in `dist/`.

@@ -171,9 +171,11 @@ export function createRenderer(canvas: HTMLCanvasElement, thumbnail = false) {
   if (!ctx) throw new Error('This browser does not support Canvas 2D.');
 
   return (plant: Plant, branches: BranchAppearance | null, wallX: number | null): View | undefined => {
-    const { clientWidth: width, clientHeight: height } = canvas;
+    const detached = thumbnail && !canvas.isConnected;
+    const width = detached ? canvas.width : canvas.clientWidth;
+    const height = detached ? canvas.height : canvas.clientHeight;
     if (!width || !height) return;
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const ratio = detached ? 1 : Math.min(window.devicePixelRatio || 1, 2);
     const pixelWidth = Math.round(width * ratio);
     const pixelHeight = Math.round(height * ratio);
     if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {

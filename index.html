@@ -17,6 +17,10 @@
             <h1>Plant playground</h1>
           </div>
         </div>
+        <div class="library-tools">
+          <button id="my-trees" class="button" type="button" aria-haspopup="dialog">My trees</button>
+          <button id="save-tree" class="button primary" type="button" aria-haspopup="dialog">Save tree</button>
+        </div>
       </header>
 
       <div class="toolbar" role="group" aria-label="Growth controls">
@@ -100,6 +104,26 @@
         </section>
       </div>
     </main>
+    <dialog id="tree-name-dialog" class="library-dialog name-dialog" aria-labelledby="tree-name-title">
+      <form id="tree-name-form">
+        <h2 id="tree-name-title">Save tree</h2>
+        <label for="tree-name">Tree name</label>
+        <input id="tree-name" name="tree-name" type="text" maxlength="80" required autofocus />
+        <p id="tree-name-error" class="library-message" role="alert"></p>
+        <div class="dialog-actions">
+          <button id="cancel-tree-name" class="button" type="button">Cancel</button>
+          <button class="button primary" type="submit">Save</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="tree-library" class="library-dialog" aria-labelledby="tree-library-title">
+      <div class="library-heading">
+        <h2 id="tree-library-title">My trees</h2>
+        <form method="dialog"><button class="button" type="submit">Close</button></form>
+      </div>
+      <p id="tree-library-message" class="library-message" role="status"></p>
+      <ul id="tree-library-list" class="tree-library-list"></ul>
+    </dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
