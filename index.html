@@ -49,13 +49,21 @@
         <section class="panel rules" aria-labelledby="rules-title">
           <div class="panel-heading">
             <h2 id="rules-title">Growth rules</h2>
-            <div class="preset-picker">
-              <label for="preset">Preset</label>
-              <select id="preset"><option value="" hidden>Custom</option></select>
+            <div class="rule-tools">
+              <div class="preset-picker">
+                <label for="preset">Preset</label>
+                <select id="preset"><option value="" hidden>Custom</option></select>
+              </div>
+              <button id="open-workspace" class="button" type="button" aria-label="Open workspace file">Open</button>
+              <input id="workspace-file" type="file" accept=".json,application/json" hidden />
             </div>
           </div>
           <div id="workspace" aria-label="Blockly workspace"></div>
-          <p class="panel-footer" id="rule-message" role="status">Add conditions from Logic to change when buds grow.</p>
+          <div class="panel-footer rules-footer">
+            <span id="rule-message" role="status">Add conditions from Logic to change when buds grow.</span>
+            <span id="save-status" role="status"></span>
+            <span id="import-status" role="status"></span>
+          </div>
         </section>
         <section class="panel preview" aria-labelledby="preview-title">
           <div class="panel-heading">

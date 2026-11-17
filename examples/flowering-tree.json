@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "preset": "",
+  "speed": 5,
+  "timeline": {
+    "wallX": null,
+    "chanceSeed": 2,
+    "generation": 35,
+    "suns": [
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 },
+      { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }, { "x": -90, "y": -1400 }
+    ]
+  },
+  "workspace": {
+    "blocks": {
+      "languageVersion": 0,
+      "blocks": [
+        {
+          "type": "when_bud_grows", "x": 22, "y": 22,
+          "inputs": { "DO": { "block": {
+            "type": "bend_toward_light", "fields": { "ANGLE": 1 },
+            "next": { "block": {
+              "type": "extend_bud", "fields": { "DISTANCE": 1.28 },
+              "next": { "block": {
+                "type": "if_bud_age", "fields": { "AGE": 7 },
+                "inputs": { "DO": { "block": { "type": "split_bud", "fields": { "ANGLE": 25 } } } },
+                "next": { "block": {
+                  "type": "if_random_chance", "fields": { "PERCENT": 15 },
+                  "inputs": { "DO": { "block": { "type": "sprout_side_bud", "fields": { "ANGLE": 30 } } } },
+                  "next": { "block": {
+                    "type": "if_bud_age", "fields": { "AGE": 6 },
+                    "inputs": { "DO": { "block": {
+                      "type": "if_crowded", "fields": { "RADIUS": 0.5 },
+                      "inputs": { "DO": { "block": { "type": "grow_flower" } } }
+                    } } }
+                  } }
+                } }
+              } }
+            } }
+          } } }
+        },
+        {
+          "type": "when_branch_ages", "x": 22, "y": 702, "fields": { "AGE": 20 },
+          "inputs": { "DO": { "block": {
+            "type": "set_branch_thickness", "fields": { "MULTIPLIER": 1.3 },
+            "next": { "block": { "type": "set_branch_color", "fields": { "COLOR": "#956646" } } }
+          } } }
+        }
+      ]
+    }
+  }
+}

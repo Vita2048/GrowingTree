@@ -1,9 +1,10 @@
-import { svgResize } from 'blockly';
+import { serialization, svgResize, Workspace } from 'blockly';
 import { createEditor, loadWorkspace, readProgram } from './editor';
 import { RULER_HEIGHT, UNITS_PER_METRE, finished, reachedLimit, type BranchAppearance, type Plant, type Point } from './growth';
 import { createVariants, type Variant } from './mutation';
 import { presets } from './presets';
 import { createRenderer, type View } from './render';
+import { parseSession, readSession, writeSession } from './session';
 import { Timeline } from './timeline';
 import './style.css';
 
@@ -23,6 +24,10 @@ const budCount = document.querySelector<HTMLOutputElement>('#bud-count')!;
 const segmentCount = document.querySelector<HTMLOutputElement>('#segment-count')!;
 const status = document.querySelector<HTMLElement>('#growth-status')!;
 const ruleMessage = document.querySelector<HTMLElement>('#rule-message')!;
+const saveStatus = document.querySelector<HTMLElement>('#save-status')!;
+const importStatus = document.querySelector<HTMLElement>('#import-status')!;
+const openWorkspace = document.querySelector<HTMLButtonElement>('#open-workspace')!;
+const workspaceFile = document.querySelector<HTMLInputElement>('#workspace-file')!;
 const sunHandle = document.querySelector<HTMLButtonElement>('#sun')!;
 const preset = document.querySelector<HTMLSelectElement>('#preset')!;
 const ruler = document.querySelector<HTMLElement>('#height-ruler')!;
@@ -37,11 +42,21 @@ const workspace = createEditor(workspaceHost);
 const draw = createRenderer(canvas);
 const starterGeneration = 22;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+let saved = readSession();
+if (saved) {
+  try {
+    loadWorkspace(workspace, saved.workspace);
+  } catch {
+    saved = null;
+    loadWorkspace(workspace, presets.oak.workspace);
+  }
+}
 let history = new Timeline(presets.oak.wallX);
 let program = readProgram(workspace);
 let variants: Variant[] = [];
 let running = false;
 let timer: number | undefined;
+let saveTimer: number | undefined;
 let updateQueued = false;
 let view: View | undefined;
 let drawnPlant: Plant | undefined;
@@ -92,7 +107,28 @@ function paint(): void {
   scrubber.setAttribute('aria-valuetext', `Generation ${plant.generation} of ${history.latest}`);
   budCount.value = String(plant.buds.length);
   segmentCount.value = String(plant.segments.length);
+  ruleMessage.textContent = program.buds.length
+    ? 'Add conditions from Logic to change when buds grow.'
+    : 'Connect a growth action under “when a bud grows.”';
   paintPreview();
+  queueSave();
+}
+
+function saveProgress(): void {
+  window.clearTimeout(saveTimer);
+  const success = writeSession({
+    workspace: serialization.workspaces.save(workspace),
+    timeline: history.save(),
+    preset: preset.value,
+    speed: Number(speed.value),
+  });
+  const label = success ? 'Saved locally' : 'Browser saving unavailable';
+  if (saveStatus.textContent !== label) saveStatus.textContent = label;
+}
+
+function queueSave(): void {
+  window.clearTimeout(saveTimer);
+  saveTimer = window.setTimeout(saveProgress, 250);
 }
 
 function setRunning(next: boolean): void {
@@ -159,19 +195,51 @@ mutate.addEventListener('click', () => {
 closeMutations.addEventListener('click', hideVariants);
 
 for (const [key, item] of Object.entries(presets)) preset.add(new Option(item.name, key));
-preset.value = 'oak';
+preset.value = saved?.preset ?? 'oak';
 preset.addEventListener('change', () => {
   const next = presets[preset.value];
   if (!next) return;
   hideVariants();
+  importStatus.textContent = '';
   loadWorkspace(workspace, next.workspace);
   workspace.scroll(0, 0);
   program = readProgram(workspace);
   history = new Timeline(next.wallX);
   for (let i = 0; i < starterGeneration; i++) history.step(program.buds);
   setRunning(!reducedMotion.matches && !finished(history.current.plant));
-  ruleMessage.textContent = 'Add conditions from Logic to change when buds grow.';
   paint();
+});
+
+openWorkspace.addEventListener('click', () => workspaceFile.click());
+workspaceFile.addEventListener('change', async () => {
+  const file = workspaceFile.files?.[0];
+  workspaceFile.value = '';
+  if (!file) return;
+
+  const scratch = new Workspace();
+  try {
+    const imported = parseSession(await file.text());
+    if (!imported) throw new Error('Unrecognized workspace format');
+    loadWorkspace(scratch, imported.workspace);
+    const nextProgram = readProgram(scratch);
+    const nextHistory = Timeline.restore(imported.timeline, nextProgram.buds);
+
+    setRunning(false);
+    hideVariants();
+    loadWorkspace(workspace, imported.workspace);
+    workspace.scroll(0, 0);
+    program = readProgram(workspace);
+    history = nextHistory;
+    preset.value = imported.preset;
+    speed.value = String(imported.speed);
+    showSpeed();
+    importStatus.textContent = `Opened ${file.name}`;
+    paint();
+  } catch {
+    importStatus.textContent = 'Could not open that Canopy workspace.';
+  } finally {
+    scratch.dispose();
+  }
 });
 
 playback.addEventListener('click', () => {
@@ -194,10 +262,15 @@ reset.addEventListener('click', () => {
   paint();
 });
 
-speed.addEventListener('input', () => {
+function showSpeed(): void {
   speedValue.value = `${speed.value} gen/s`;
   speed.setAttribute('aria-valuetext', `${speed.value} generations per second`);
+}
+
+speed.addEventListener('input', () => {
+  showSpeed();
   if (running) setRunning(true);
+  queueSave();
 });
 
 scrubber.addEventListener('input', () => {
@@ -253,6 +326,7 @@ sunHandle.addEventListener('keydown', (event) => {
 
 workspace.addChangeListener((event) => {
   if (event.isUiEvent || updateQueued) return;
+  queueSave();
   updateQueued = true;
   requestAnimationFrame(() => {
     updateQueued = false;
@@ -264,9 +338,6 @@ workspace.addChangeListener((event) => {
     program = next;
     if (updatedGrowth) history.applyRules(program.buds);
     if (running && (!program.buds.length || finished(history.current.plant))) setRunning(false);
-    ruleMessage.textContent = program.buds.length
-      ? 'Add conditions from Logic to change when buds grow.'
-      : 'Connect a growth action under “when a bud grows.”';
     paint();
   });
 });
@@ -278,7 +349,13 @@ canvasObserver.observe(canvas);
 const thumbnailObserver = new ResizeObserver(drawThumbnails);
 thumbnailObserver.observe(variantGrid);
 
-speed.setAttribute('aria-valuetext', `${speed.value} generations per second`);
-for (let i = 0; i < starterGeneration; i++) history.step(program.buds);
-setRunning(!reducedMotion.matches);
+window.addEventListener('pagehide', saveProgress);
+if (saved) {
+  speed.value = String(saved.speed);
+  history = Timeline.restore(saved.timeline, program.buds);
+} else {
+  for (let i = 0; i < starterGeneration; i++) history.step(program.buds);
+  setRunning(!reducedMotion.matches);
+}
+showSpeed();
 paint();

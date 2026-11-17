@@ -2,6 +2,8 @@
 
 A growth playground with a Blockly editor, live Canvas 2D preview, and a draggable sun.
 
+[Open Canopy on GitHub Pages](https://vita2048.github.io/GrowingTree/)
+
 ## Run locally
 
 With Node.js 22.12 or newer, run:
@@ -22,5 +24,9 @@ Open the local URL printed by Vite. On Windows, use `npm.cmd` in place of `npm` 
 - Use the **0–20 m** ruler to read height above the seed. The height, extension, and spacing blocks accept metres to two decimal places. For example, nest **grow a flower** inside **if height ≥ 12.75 m**. Put this check before the split so it can act on the original bud.
 - **When branch age ≥** controls how many generations a segment lives before the **Looks** blocks change its thickness and color.
 - **Step** pauses growth and advances once. **Reset** returns to the seed and keeps your rules and current sun position. Growth stops after at most 35 generations. **Replay** starts a new run with the current sun. Reset and Replay use fresh chance rolls. Scrubbing or editing the current run keeps its random seed.
+- The browser automatically saves your blocks, speed, and current growth timeline, including sun moves and random rolls. Reloading restores the run paused at the same generation. Saves are tied to the browser and site address.
+- Download [the flowering tree workspace](examples/flowering-tree.json), then use **Open** beside **Preset** to load it. It opens at generation 35. Drag **Generation** back to zero and press **Play** to watch the saved run grow again.
 
 Run `npm run build` to type-check the project and produce the static site in `dist/`.
+
+The GitHub Pages workflow builds and publishes `dist/` on pushes to `main`.

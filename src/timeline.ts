@@ -5,12 +5,42 @@ interface Frame {
   sun: Point;
 }
 
+export interface TimelineState {
+  wallX: number | null;
+  chanceSeed: number;
+  generation: number;
+  suns: Point[];
+}
+
 export class Timeline {
   private frames: Frame[];
   private cursor = 0;
 
   constructor(readonly wallX: number | null = null, sun: Point = DEFAULT_SUN, chanceSeed?: number) {
     this.frames = [{ plant: seedPlant(chanceSeed), sun }];
+  }
+
+  static restore(state: TimelineState, actions: Action[]): Timeline {
+    const timeline = new Timeline(state.wallX, state.suns[0], state.chanceSeed);
+    if (actions.length) {
+      for (const sun of state.suns.slice(1)) {
+        const before = timeline.latest;
+        timeline.step(actions);
+        if (timeline.latest === before) break;
+        timeline.moveSun(sun);
+      }
+    }
+    timeline.seek(state.generation);
+    return timeline;
+  }
+
+  save(): TimelineState {
+    return {
+      wallX: this.wallX,
+      chanceSeed: this.frames[0].plant.chanceSeed,
+      generation: this.cursor,
+      suns: this.frames.map(({ sun }) => sun),
+    };
   }
 
   get current(): Frame {
